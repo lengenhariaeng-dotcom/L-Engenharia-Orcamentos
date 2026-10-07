@@ -83,7 +83,6 @@ dialog{border:0;border-radius:16px;padding:0;max-width:min(780px,94vw);box-shado
       <div class="grid three">
         <label>O.S.<input id="os" placeholder="202686"></label>
         <label>Data<input id="date" type="date"></label>
-        <label>Tipo do documento<input id="docType" value="Orçamento"></label>
         <label>Cliente<input id="client" placeholder="Nome do cliente"></label>
         <label>Telefone<input id="phone" placeholder="(11) 99999-9999"></label>
         <label>Obra / condomínio<input id="work" placeholder="Nome da obra ou condomínio"></label>
@@ -244,7 +243,7 @@ function data(){
  return{
   id:state.id||uid(),
   logo:state.logo,
-  os:$("os").value,date:$("date").value,docType:$("docType").value,
+  os:$("os").value,date:$("date").value,
   client:$("client").value,phone:$("phone").value,work:$("work").value,address:$("address").value,projectTitle:$("projectTitle").value,
   companyName:$("companyName").value,slogan:$("slogan").value,companyAddress:$("companyAddress").value,companyPhones:$("companyPhones").value,
   instagram:$("instagram").value,email:$("email").value,
@@ -287,7 +286,6 @@ function docHtml(d){
    <tr><td colspan="6" class="doc-project">${esc(d.projectTitle)}</td></tr>
    <tr class="doc-head">${show?`<th>Item</th><th colspan="1">Descrição</th><th>Qtd.</th><th>Un.</th><th>Valor unit.</th><th>Total</th>`:`<th>Item</th><th colspan="5">Descrição</th>`}</tr>
    ${itemRows}
-   <tr><td></td><td colspan="5" class="doc-center">${esc(d.docType)}</td></tr>
    <tr><td colspan="6" class="doc-value">VALOR : ${money(d.total)}</td></tr>
    <tr><td colspan="6" class="doc-section">FORMA DE PAGAMENTO</td></tr>
    <tr><td colspan="6" class="doc-pay">${esc(d.payment).replace(/\n/g,"<br>")}</td></tr>
@@ -378,7 +376,7 @@ function loadBudget(d,duplicate){
  state.notes=(d.notes||[]).map(x=>({...x,id:uid()}));
  $("os").value=duplicate?String(new Date().getFullYear())+String(Math.floor(100+Math.random()*900)):d.os||"";
  $("date").value=duplicate?new Date().toISOString().slice(0,10):d.date||"";
- $("docType").value=d.docType||"Orçamento";$("client").value=d.client||"";$("phone").value=d.phone||"";$("work").value=d.work||"";$("address").value=d.address||"";$("projectTitle").value=d.projectTitle||"";
+ $("client").value=d.client||"";$("phone").value=d.phone||"";$("work").value=d.work||"";$("address").value=d.address||"";$("projectTitle").value=d.projectTitle||"";
  $("companyName").value=d.companyName||"L ENGENHARIA";$("slogan").value=d.slogan||"";$("companyAddress").value=d.companyAddress||"";$("companyPhones").value=d.companyPhones||"";$("instagram").value=d.instagram||"";$("email").value=d.email||"";
  $("showItemValues").checked=!!d.showItemValues;$("autoTotal").checked=!!d.autoTotal;
  $("keepBlankRows").checked=d.keepBlankRows!==false;$("minRows").value=d.minRows||8;$("appendComplement").checked=d.appendComplement!==false;
@@ -393,7 +391,7 @@ $("importBackup").onchange=e=>{
  const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!Array.isArray(x))throw new Error();setHistory(x);renderHistory();alert("Backup importado.");}catch{alert("Arquivo de backup inválido.")}};r.readAsText(f)
 };
 
-["os","date","docType","client","phone","work","address","projectTitle","companyName","slogan","companyAddress","companyPhones","instagram","email","total","payment","paymentFooter"].forEach(id=>$(id).addEventListener("input",()=>{if(id==="os")$("topCode").textContent="O.S. "+$("os").value}));
+["os","date","client","phone","work","address","projectTitle","companyName","slogan","companyAddress","companyPhones","instagram","email","total","payment","paymentFooter"].forEach(id=>$(id).addEventListener("input",()=>{if(id==="os")$("topCode").textContent="O.S. "+$("os").value}));
 $("showItemValues").onchange=renderPreview;
 $("keepBlankRows").onchange=renderPreview;
 $("minRows").oninput=renderPreview;
