@@ -42,11 +42,8 @@ textarea{resize:vertical;min-height:78px}
 .toggle{display:flex;align-items:center;gap:8px;color:var(--blue);font-weight:800;font-size:13px}.toggle input{width:18px;height:18px}
 .history-item{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:8px}.history-item h4{margin:0 0 3px;color:var(--blue)}.history-item p{margin:2px 0;color:var(--muted);font-size:12px}
 .preview-wrap{overflow:auto;background:#DDE2E7;border-radius:14px;padding:18px}
-.doc{
-  width:1122px;min-height:794px;margin:auto;background:#fff;color:#111;
-  font-family:Arial,Helvetica,sans-serif;padding:38px 38px 28px;box-shadow:0 10px 35px rgba(0,0,0,.12)
-}
-.doc-table{width:100%;border-collapse:collapse;table-layout:fixed}.doc-table td,.doc-table th{border:2px solid #222;padding:3px 6px;font-size:15px;vertical-align:middle}.doc-table .no-pad{padding:0}.doc-logo{width:142px;height:114px;object-fit:contain;display:block;margin:auto}.doc-title{text-align:center;font-weight:800;font-size:22px;color:#173E74}.doc-os{font-weight:800;font-size:15px}.doc-label{width:92px;font-weight:700}.doc-center{text-align:center}.doc-section{background:#C9D7F0;font-weight:800;text-align:center}.doc-project{text-align:center;font-weight:700;font-size:16px}.doc-head th{font-size:16px}.doc-value{text-align:center;font-size:18px;font-weight:800;background:#EEE}.doc-pay{text-align:center;font-size:15px;line-height:1.45}.doc-note{text-align:center;font-size:14px;line-height:1.3}.doc-footer{display:grid;grid-template-columns:minmax(0,1fr) 225px;align-items:center;min-height:118px;border:2px solid #222;border-top:0;box-sizing:border-box;padding:0}.doc-footer .contact{font-size:15px;line-height:1.5;text-align:center;padding-left:70px}.doc-footer .footer-logo-box{height:114px;display:flex;align-items:center;justify-content:center;padding-right:18px}.doc-footer .footer-logo{width:170px;height:108px;object-fit:contain;display:block}
+.doc{width:794px;min-height:1122px;margin:auto;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;padding:129px 67px 0;box-shadow:0 10px 35px rgba(0,0,0,.12)}
+.doc-table{width:100%;border-collapse:collapse;table-layout:fixed}.doc-table td,.doc-table th{border:1.3px solid #111;padding:1px 3px;font-size:14px;vertical-align:middle}.doc-table .no-pad{padding:0}.doc-logo{width:98px;height:82px;object-fit:contain;display:block;margin:auto}.doc-title{text-align:center;font-weight:800;font-size:25px;color:#02447E}.doc-os{font-weight:800;font-size:14px}.doc-label{width:70px;font-weight:400}.doc-center{text-align:center}.doc-section{background:#B4C6E7;font-weight:400;text-align:center}.doc-project{text-align:center;font-weight:400;font-size:14px}.doc-head th{font-size:15px}.doc-value{text-align:center;font-size:14px;font-weight:400;background:#DBDBDB}.doc-pay{text-align:center;font-size:14px;line-height:1.25}.doc-note{text-align:center;font-size:13px;line-height:1.18}.doc-footer{position:relative;min-height:94px;border:1.3px solid #111;border-top:0;box-sizing:border-box;padding:12px 155px 0 20px}.doc-footer .contact{font-size:13px;line-height:1.35;text-align:center}.doc-footer .footer-logo-box{position:absolute;right:18px;top:3px;width:120px;height:88px;display:flex;align-items:center;justify-content:center}.doc-footer .footer-logo{width:112px;height:82px;object-fit:contain;display:block}
 .amount-mode{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 dialog{border:0;border-radius:16px;padding:0;max-width:min(780px,94vw);box-shadow:0 30px 80px rgba(0,0,0,.26)}dialog::backdrop{background:rgba(8,18,30,.5);backdrop-filter:blur(3px)}.modal{padding:18px;background:#fff}.modal h3{margin-top:0;color:var(--blue)}
 @media(max-width:800px){
@@ -115,7 +112,7 @@ dialog{border:0;border-radius:16px;padding:0;max-width:min(780px,94vw);box-shado
         <label class="toggle"><input id="keepBlankRows" type="checkbox" checked> Manter linhas vazias no orçamento</label>
         <label style="max-width:190px">Mínimo de linhas<input id="minRows" type="number" min="1" max="20" step="1" value="11"></label>
       </div>
-      <div class="small" style="margin-top:8px">Ex.: com 4 serviços e mínimo de 8 linhas, o orçamento mantém 4 linhas em branco.</div>
+      <div class="small" style="margin-top:8px">O modelo final usa 11 linhas. Com 8 serviços, ficam 3 linhas em branco.</div>
       <div id="items" class="items" style="margin-top:12px"></div>
     </div>
   </section>
@@ -139,7 +136,7 @@ dialog{border:0;border-radius:16px;padding:0;max-width:min(780px,94vw);box-shado
   <section id="tab-visualizar" class="panel">
     <div class="card">
       <div class="card-head">
-        <div><h2>Pré-visualização</h2><p>O orçamento segue o eixo e o rodapé do Excel da L Engenharia.</p></div>
+        <div><h2>Pré-visualização</h2><p>O PDF segue o modelo final enviado pela L Engenharia.</p></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button id="saveBudget" class="btn primary">Salvar orçamento</button>
           <button id="printBudget" class="btn gold">Gerar PDF</button>
@@ -305,7 +302,7 @@ function renderPreview(){
 }
 function fitPreview(){
  const wrap=document.querySelector(".preview-wrap"),doc=document.querySelector(".doc");if(!wrap||!doc)return;
- if(window.innerWidth<900){const available=wrap.clientWidth-12,scale=Math.min(1,available/1122);doc.style.transform=`scale(${scale})`;doc.style.marginBottom=`-${794*(1-scale)}px`;}else{doc.style.transform="none";doc.style.marginBottom="0"}
+ if(window.innerWidth<900){const available=wrap.clientWidth-12,scale=Math.min(1,available/794);doc.style.transform=`scale(${scale})`;doc.style.marginBottom=`-${1122*(1-scale)}px`;}else{doc.style.transform="none";doc.style.marginBottom="0"}
 }
 window.addEventListener("resize",fitPreview);
 
@@ -354,6 +351,7 @@ function fitOneLine(doc,txt,maxWidth,startSize=8.5,minSize=6.2,bold=false){
  }
  return minSize;
 }
+
 async function generateFinalPdf(){
  const btn=$("printBudget"),label=btn.textContent;
  btn.disabled=true;btn.textContent="Gerando PDF...";
@@ -361,192 +359,230 @@ async function generateFinalPdf(){
   if(!window.jspdf)throw new Error("A biblioteca de PDF não carregou. Atualize a página e tente novamente.");
   const {jsPDF}=window.jspdf;
   const d=data();
-  const doc=new jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true});
-  const pageW=297,pageH=210,x=8,w=281;
-  const dark=[23,62,116],light=[201,215,240],gray=[221,221,221];
 
-  doc.setLineWidth(.30);
+  // O PDF de referência enviado é A4 RETRATO.
+  const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4",compress:true});
+
+  // Geometria extraída do PDF de referência.
+  const X=17.78, XR=195.62, W=XR-X;
+  const Y0=34.16, YB=219.33;
+  const logoX2=46.10, labelX2=63.50, osX=151.51;
+  const itemX2=27.81;
+
+  const BLUE_FILL=[180,198,231];
+  const GRAY_FILL=[219,219,219];
+  const BRAND_BLUE=[2,68,126];
+
   doc.setDrawColor(0,0,0);
   doc.setTextColor(0,0,0);
+  doc.setLineWidth(.34);
 
-  const rect=(rx,ry,rw,rh,fill=null)=>{
-   if(fill){doc.setFillColor(...fill);doc.rect(rx,ry,rw,rh,"FD")}
-   else doc.rect(rx,ry,rw,rh);
+  const rect=(x,y,w,h,fill=null)=>{
+    if(fill){doc.setFillColor(...fill);doc.rect(x,y,w,h,"FD")}
+    else doc.rect(x,y,w,h);
   };
   const line=(x1,y1,x2,y2)=>doc.line(x1,y1,x2,y2);
-  const center=(txt,cx,yy,size=9,bold=false,color=null)=>{
-   doc.setFont("helvetica",bold?"bold":"normal");
-   doc.setFontSize(size);
-   if(color)doc.setTextColor(...color);else doc.setTextColor(0,0,0);
-   doc.text(String(txt||""),cx,yy,{align:"center"});
+  const center=(txt,cx,base,size=10.44,bold=false,color=null)=>{
+    doc.setFont("helvetica",bold?"bold":"normal");
+    doc.setFontSize(size);
+    doc.setTextColor(...(color||[0,0,0]));
+    doc.text(String(txt||""),cx,base,{align:"center"});
   };
-  const left=(txt,lx,yy,size=9,bold=false)=>{
-   doc.setFont("helvetica",bold?"bold":"normal");doc.setFontSize(size);doc.setTextColor(0,0,0);
-   doc.text(String(txt||""),lx,yy);
+  const left=(txt,x,base,size=10.44,bold=false)=>{
+    doc.setFont("helvetica",bold?"bold":"normal");
+    doc.setFontSize(size);
+    doc.setTextColor(0,0,0);
+    doc.text(String(txt||""),x,base);
+  };
+  const fit=(txt,maxW,start=10.44,min=6.8,bold=false)=>{
+    txt=String(txt||"");
+    doc.setFont("helvetica",bold?"bold":"normal");
+    for(let s=start;s>=min;s-=.2){
+      doc.setFontSize(s);
+      if(doc.getTextWidth(txt)<=maxW)return s;
+    }
+    return min;
   };
 
-  let y=5;
+  // ===== CABEÇALHO =====
+  const yTop=34.16, yInfoTop=43.60, y1=48.26, y2=52.92, y3=57.57, yHeaderBottom=62.23;
 
-  // Cabeçalho exatamente no padrão do Excel:
-  // logo à esquerda, nome central, O.S./data à direita e dados do cliente abaixo.
-  const headerH=32,logoW=44,osW=70,titleH=8,clientH=6,labelW=28;
-  rect(x,y,w,headerH);
-  line(x+logoW,y,x+logoW,y+headerH);
-  line(x+w-osW,y,x+w-osW,y+titleH);
-  line(x+w-osW,y+titleH/2,x+w,y+titleH/2);
-  line(x+logoW,y+titleH,x+w,y+titleH);
-  for(let i=1;i<=4;i++)line(x+logoW,y+titleH+i*clientH,x+w,y+titleH+i*clientH);
-  for(let i=0;i<4;i++)line(x+logoW+labelW,y+titleH+i*clientH,x+logoW+labelW,y+titleH+(i+1)*clientH);
-
-  const topLogo=await pdfImageData(d.logo||"logo-topo.png");
-  addImageFit(doc,topLogo,x+4,y+2,logoW-8,headerH-4);
-
-  center(d.companyName||"L ENGENHARIA",x+logoW+(w-logoW-osW)/2,y+5.6,17,true,dark);
-  center("O.S:  "+(d.os||""),x+w-osW/2,y+3.2,10,true);
-  center("Data: "+pdfDate(d.date),x+w-osW/2,y+7.1,10,true);
-
-  const info=[
-   ["Cliente:",d.client],
-   ["Tel:",d.phone],
-   ["Obra:",d.work],
-   ["Endereço:",d.address]
-  ];
-  info.forEach((row,i)=>{
-   const yy=y+titleH+i*clientH;
-   left(row[0],x+logoW+1.5,yy+4.15,9,false);
-   const val=String(row[1]||"");
-   const maxW=w-logoW-labelW-4;
-   const fs=fitOneLine(doc,val,maxW,9,7.1,false);
-   center(val,x+logoW+labelW+(w-logoW-labelW)/2,yy+4.15,fs,false);
+  // moldura e divisões
+  rect(X,yTop,W,yHeaderBottom-yTop);
+  line(logoX2,yTop,logoX2,yHeaderBottom);
+  line(osX,yTop,osX,yInfoTop);
+  line(osX,(yTop+yInfoTop)/2,XR,(yTop+yInfoTop)/2);
+  line(logoX2,yInfoTop,XR,yInfoTop);
+  [y1,y2,y3].forEach(yy=>line(logoX2,yy,XR,yy));
+  [yInfoTop,y1,y2,y3].forEach((yy,i)=>{
+    const next=[y1,y2,y3,yHeaderBottom][i];
+    line(labelX2,yy,labelX2,next);
   });
 
-  y+=headerH;
+  // logos extraídos do PDF original
+  const topLogo=await pdfImageData(d.logo||"logo-topo.png");
+  addImageFit(doc,topLogo,19.39,37.38,26.04,21.21);
 
-  // Linha em branco, faixa azul e título da obra.
-  rect(x,y,w,4);y+=4;
-  rect(x,y,w,4,light);y+=4;
-  rect(x,y,w,6);
-  center(d.projectTitle,x+w/2,y+4.2,10,false);
-  y+=6;
-  rect(x,y,w,4);y+=4;
+  center(d.companyName||"L ENGENHARIA",(logoX2+osX)/2,42.55,18.96,true,BRAND_BLUE);
+  center("O.S:   "+(d.os||""),(osX+XR)/2,38.95,10.44,true);
+  center("Data: "+pdfDate(d.date),(osX+XR)/2,43.15,10.44,true);
 
-  // Tabela de serviços.
+  const info=[
+    ["Cliente:",d.client,yInfoTop,y1],
+    ["Tel:",d.phone,y1,y2],
+    ["Obra:",d.work,y2,y3],
+    ["Endereço:",d.address,y3,yHeaderBottom]
+  ];
+  info.forEach(([lab,val,ya,yb])=>{
+    const base=ya+(yb-ya)*.73;
+    left(lab,46.57,base,10.44,false);
+    const fs=fit(val,XR-labelX2-3,10.44,7.2,false);
+    center(val,labelX2+(XR-labelX2)/2,base,fs,false);
+  });
+
+  // ===== FAIXAS / TÍTULO =====
+  rect(X,62.23,W,3.64);
+  rect(X,65.87,W,4.91,BLUE_FILL);
+  rect(X,70.78,W,5.00);
+  center(d.projectTitle,X+W/2,74.92,10.44,false);
+  rect(X,75.78,W,4.87);
+
+  // ===== SERVIÇOS =====
+  const tableHeaderTop=80.65, tableHeaderBottom=85.73;
+  rect(X,tableHeaderTop,W,tableHeaderBottom-tableHeaderTop);
   const show=!!d.showItemValues;
-  const itemW=16;
-  rect(x,y,w,5.5);
-  if(show){
-   const cols=[16,145,25,20,37.5,37.5];
-   let px=x;
-   for(let i=1;i<cols.length;i++){px+=cols[i-1];line(px,y,px,y+5.5)}
-   const heads=["Item","Descrição","Qtd.","Un.","Valor unit.","Total"];
-   let hx=x;
-   heads.forEach((h,i)=>{center(h,hx+cols[i]/2,y+4.0,8.7,true);hx+=cols[i]});
+
+  if(!show){
+    line(itemX2,tableHeaderTop,itemX2,140.29);
+    left("Item",18.45,84.85,11.4,true);
+    center("Descrição",(itemX2+XR)/2,84.85,11.4,true);
   }else{
-   line(x+itemW,y,x+itemW,y+5.5);
-   center("Item",x+itemW/2,y+4.0,10,true);
-   center("Descrição",x+itemW+(w-itemW)/2,y+4.0,10,true);
+    // mantém o padrão visual mesmo quando valores por item forem habilitados
+    const cols=[9.86,78.0,16.5,13.0,30.2,30.28];
+    let px=X;
+    for(let i=1;i<cols.length;i++){px+=cols[i-1];line(px,tableHeaderTop,px,140.29)}
+    const heads=["Item","Descrição","Qtd.","Un.","Valor unit.","Total"];
+    let hx=X;
+    heads.forEach((h,i)=>{center(h,hx+cols[i]/2,84.70,i<2?10.8:8.5,true);hx+=cols[i]});
   }
-  y+=5.5;
 
   const minRows=d.keepBlankRows?Math.max(1,parseInt(d.minRows||11,10)):d.items.length;
   const rowCount=Math.max(d.items.length,minRows);
   const rows=[...d.items];
   while(rows.length<rowCount)rows.push({number:"",description:"",qty:"",unit:"",price:""});
-  const rowH=Math.max(3.2,Math.min(4.7,51.7/Math.max(1,rowCount)));
 
-  rows.forEach(it=>{
-   rect(x,y,w,rowH);
-   if(show){
-    const cols=[16,145,25,20,37.5,37.5];
-    let px=x;for(let i=1;i<cols.length;i++){px+=cols[i-1];line(px,y,px,y+rowH)}
-    const total=(+it.qty||0)*(+it.price||0);
-    const vals=[it.number,it.description,it.qty,it.unit,it.price?money(it.price):"",total?money(total):""];
-    let vx=x;
-    vals.forEach((v,i)=>{
-     const maxW=cols[i]-3;
-     const fs=fitOneLine(doc,v,maxW,i===1?8.3:8.0,6.0,false);
-     center(v,vx+cols[i]/2,y+rowH*.73,fs,false);
-     vx+=cols[i];
-    });
-   }else{
-    line(x+itemW,y,x+itemW,y+rowH);
-    center(it.number,x+itemW/2,y+rowH*.73,8.4,false);
-    const desc=String(it.description||"");
-    const fs=fitOneLine(doc,desc,w-itemW-5,8.5,6.3,false);
-    center(desc,x+itemW+(w-itemW)/2,y+rowH*.73,fs,false);
-   }
-   y+=rowH;
+  // No PDF de referência: 8 itens + 3 linhas vazias.
+  const bodyTop=85.73, bodyBottom=140.29, bodyH=bodyBottom-bodyTop;
+  let heights=[];
+  if(rowCount===11 && d.items.length<=10){
+    // reproduz os espaçamentos do PDF enviado
+    heights=[5.25,5.25,5.25,5.25,5.25,5.25,5.25,5.25,5.25,4.87,2.42];
+  }else{
+    heights=Array.from({length:rowCount},()=>bodyH/rowCount);
+  }
+
+  let yy=bodyTop;
+  rows.forEach((it,idx)=>{
+    const rh=heights[idx]||bodyH/rowCount;
+    rect(X,yy,W,rh);
+    const base=yy+rh*.72;
+
+    if(!show){
+      const fsDesc=fit(it.description,XR-itemX2-4,10.44,7.0,false);
+      left(it.number,18.43,base,10.44,false);
+      center(it.description,(itemX2+XR)/2,base,fsDesc,false);
+    }else{
+      const cols=[9.86,78.0,16.5,13.0,30.2,30.28];
+      let px=X;for(let i=1;i<cols.length;i++){px+=cols[i-1];line(px,yy,px,yy+rh)}
+      const total=(+it.qty||0)*(+it.price||0);
+      const vals=[it.number,it.description,it.qty,it.unit,it.price?money(it.price):"",total?money(total):""];
+      let vx=X;
+      vals.forEach((v,i)=>{
+        const fs=fit(v,cols[i]-2,i===1?9.2:8.0,6.2,false);
+        center(v,vx+cols[i]/2,base,fs,false);
+        vx+=cols[i];
+      });
+    }
+    yy+=rh;
   });
 
-  // Valor.
-  rect(x,y,w,6,gray);
-  center("VALOR : "+money(d.total),x+w/2,y+4.4,10,false);
-  y+=6;
+  // ===== VALOR =====
+  rect(X,140.29,W,4.91,GRAY_FILL);
+  center("VALOR : "+money(d.total),X+W/2,144.30,10.44,false);
 
-  // Linha branca e pagamento.
-  rect(x,y,w,4);y+=4;
-  rect(x,y,w,5.5,light);
-  center("FORMA DE PAGAMENTO",x+w/2,y+4.0,10,false);
-  y+=5.5;
+  // linha vazia antes do pagamento
+  rect(X,145.20,W,4.24);
 
-  const payLines=doc.splitTextToSize(String(d.payment||""),w-14).slice(0,2);
-  const payH=9;
-  rect(x,y,w,payH);
-  doc.setFont("helvetica","normal");doc.setFontSize(8.2);doc.setTextColor(0,0,0);
-  if(payLines.length===1)doc.text(payLines[0],x+w/2,y+5.4,{align:"center"});
-  else{
-   doc.text(payLines[0],x+w/2,y+3.6,{align:"center"});
-   doc.text(payLines[1],x+w/2,y+7.0,{align:"center"});
+  // ===== PAGAMENTO =====
+  rect(X,149.44,W,4.91,BLUE_FILL);
+  center("FORMA DE PAGAMENTO",X+W/2,153.45,10.44,false);
+
+  rect(X,154.35,W,10.24);
+  doc.setFont("helvetica","normal");
+  doc.setFontSize(10.44);
+  const pay=String(d.payment||"");
+  const payLines=doc.splitTextToSize(pay,W-2.0).slice(0,2);
+  if(payLines.length<=1){
+    center(payLines[0]||"",X+W/2,160.60,10.44,false);
+  }else{
+    center(payLines[0],X+W/2,158.85,10.44,false);
+    center(payLines[1],X+W/2,163.10,10.44,false);
   }
-  y+=payH;
 
-  rect(x,y,w,5);
-  center(d.paymentFooter,x+w/2,y+3.7,9,false);
-  y+=5;
+  rect(X,164.59,W,4.87);
+  center(d.paymentFooter,X+W/2,168.62,10.44,false);
 
-  // Observações.
-  rect(x,y,w,5.5,light);
-  center("PRAZO E OBSERVAÇÕES",x+w/2,y+4.0,10,false);
-  y+=5.5;
+  // ===== PRAZO E OBSERVAÇÕES =====
+  rect(X,169.46,W,4.74,BLUE_FILL);
+  center("PRAZO E OBSERVAÇÕES",X+W/2,173.32,10.44,false);
 
   const notes=d.notes.filter(n=>String(n.text||"").trim()).map(n=>"*"+String(n.text||"").trim());
-  notes.forEach(note=>{
-   doc.setFont("helvetica","normal");doc.setFontSize(7.5);
-   const lines=doc.splitTextToSize(note,w-12).slice(0,2);
-   const nh=Math.max(5,lines.length*3.1+1.3);
-   rect(x,y,w,nh);
-   if(lines.length===1)doc.text(lines[0],x+w/2,y+3.6,{align:"center"});
-   else{
-    doc.text(lines[0],x+w/2,y+2.8,{align:"center"});
-    doc.text(lines[1],x+w/2,y+5.7,{align:"center"});
-   }
-   y+=nh;
+  const noteBoxes=[
+    [174.20,184.87],
+    [184.87,189.74],
+    [189.74,194.61]
+  ];
+
+  noteBoxes.forEach((box,i)=>{
+    const [ya,yb]=box;
+    rect(X,ya,W,yb-ya);
+    const txt=notes[i]||"";
+    if(!txt)return;
+    doc.setFont("helvetica","normal");
+    doc.setFontSize(10.44);
+    const lines=doc.splitTextToSize(txt,W-4).slice(0,i===0?2:1);
+    if(lines.length===2){
+      center(lines[0],X+W/2,ya+4.0,10.44,false);
+      center(lines[1],X+W/2,ya+8.2,10.44,false);
+    }else{
+      center(lines[0]||"",X+W/2,ya+(yb-ya)*.73,10.44,false);
+    }
   });
 
-  // Rodapé: dados centralizados e logo à direita, como no Excel.
-  const footerH=25,footerLogoW=55;
-  if(y+footerH>205){
-   // Mantém uma única página reduzindo apenas o espaço antes do rodapé.
-   y=Math.min(y,205-footerH);
-  }
-  rect(x,y,w,footerH);
-  line(x+w-footerLogoW,y,x+w-footerLogoW,y+footerH);
-  const cc=x+(w-footerLogoW)/2;
-  center(d.companyAddress,cc,y+6.0,8.5,false);
-  center(d.companyPhones,cc,y+11.0,8.5,false);
-  center(d.instagram,cc,y+16.0,9,false);
-  center(d.email,cc,y+21.0,8.5,false);
+  // Se houver observações extras, elas não entram no PDF de uma página para não deformar o modelo.
+  // Permanecem salvas no orçamento.
+
+  // ===== RODAPÉ =====
+  rect(X,194.61,W,24.72);
+
+  const footerCenter=84.72;
+  center(d.companyAddress,footerCenter,203.78,10.44,false);
+  center(d.companyPhones,footerCenter,208.55,10.44,false);
+  center(d.instagram,footerCenter,213.25,10.44,false);
+  center(d.email,footerCenter,218.05,11.4,false);
 
   const footerLogo=await pdfImageData(d.footerLogo||"logo-rodape.png");
-  addImageFit(doc,footerLogo,x+w-footerLogoW+3,y+2,footerLogoW-6,footerH-4);
+  addImageFit(doc,footerLogo,155.74,195.24,31.16,22.01);
 
   const safe=(d.client||"Cliente").replace(/[^a-zA-Z0-9À-ÿ_-]+/g,"_");
   doc.save(`Orcamento_L_Engenharia_${safe}_OS_${d.os||""}.pdf`);
+
  }catch(err){
   console.error(err);
   alert("Não foi possível gerar o PDF: "+err.message);
  }finally{
-  btn.disabled=false;btn.textContent=label;
+  btn.disabled=false;
+  btn.textContent=label;
  }
 }
 $("printBudget").onclick=generateFinalPdf;
