@@ -1,0 +1,24 @@
+L ENGENHARIA - APLICATIVO DE ORÇAMENTOS
+
+Baseado no padrão de orçamento fornecido pela L Engenharia.
+
+Recursos:
+- O.S., data, cliente, telefone, obra, endereço e título editáveis
+- Dados da própria L Engenharia editáveis
+- Logo substituível
+- Serviços adicionáveis/removíveis
+- Opção de exibir ou ocultar quantidade, unidade e valores por item
+- Total manual ou automático
+- Forma de pagamento editável
+- Observações adicionáveis/removíveis
+- Pré-visualização no padrão do documento
+- PDF em A4 paisagem, fundo branco
+- Salvar e atualizar orçamento
+- Duplicar orçamento
+- Histórico local
+- Backup e restauração em JSON
+
+Para publicar no GitHub Pages:
+1. Crie um novo repositório ou use um existente.
+2. Envie estes arquivos para a raiz.
+3. Settings > Pages > Deploy from a branch > main > /(root).
