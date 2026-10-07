@@ -8,7 +8,6 @@
 <link rel="manifest" href="manifest.json">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <style>
 :root{
   --blue:#173E74;--blue2:#0F2E56;--lightblue:#C9D7F0;--gold:#C7A15C;
@@ -144,14 +143,9 @@ dialog{border:0;border-radius:16px;padding:0;max-width:min(780px,94vw);box-shado
         <div><h2>Pré-visualização</h2><p>O orçamento segue o eixo e o rodapé do Excel da L Engenharia.</p></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button id="saveBudget" class="btn primary">Salvar orçamento</button>
-          <button id="printBudget" class="btn gold">Baixar PDF completo</button>
+          <button id="printBudget" class="btn gold">Gerar PDF</button>
         </div>
       </div>
-      <div class="grid two" style="margin-bottom:12px">
-        <label class="toggle"><input id="appendComplement" type="checkbox" checked> Anexar apresentação institucional após o orçamento</label>
-        <label>Substituir complemento padrão <span class="small">(opcional)</span><input id="customComplement" type="file" accept="application/pdf"></label>
-      </div>
-      <div class="small" style="margin-bottom:10px">O PDF final fica: orçamento + complemento institucional, em um único arquivo.</div>
       <div class="preview-wrap"><div id="preview"></div></div>
     </div>
   </section>
@@ -248,7 +242,7 @@ function data(){
   companyName:$("companyName").value,slogan:$("slogan").value,companyAddress:$("companyAddress").value,companyPhones:$("companyPhones").value,
   instagram:$("instagram").value,email:$("email").value,
   items:state.items,showItemValues:$("showItemValues").checked,autoTotal:$("autoTotal").checked,
-  keepBlankRows:$("keepBlankRows").checked,minRows:parseInt($("minRows").value||"8",10),appendComplement:$("appendComplement").checked,total:$("total").value,
+  keepBlankRows:$("keepBlankRows").checked,minRows:parseInt($("minRows").value||"8",10),total:$("total").value,
   payment:$("payment").value,paymentFooter:$("paymentFooter").value,notes:state.notes,
   updatedAt:new Date().toISOString()
  }
@@ -314,39 +308,24 @@ function fitPreview(){
 }
 window.addEventListener("resize",fitPreview);
 
-async function getComplementBytes(){
- const custom=$("customComplement").files?.[0];
- if(custom)return await custom.arrayBuffer();
- const r=await fetch("complemento-orcamento.pdf",{cache:"no-store"});
- if(!r.ok)throw new Error("Não foi possível carregar o complemento institucional.");
- return await r.arrayBuffer();
-}
+
 async function generateFinalPdf(){
- const btn=$("printBudget"),label=btn.textContent;btn.disabled=true;btn.textContent="Gerando PDF...";
+ const btn=$("printBudget"),old=btn.textContent;btn.disabled=true;btn.textContent="Gerando PDF...";
  try{
-  renderPreview();
-  if(!window.html2canvas||!window.jspdf)throw new Error("Bibliotecas de PDF não carregaram. Atualize a página e tente novamente.");
-  const node=document.querySelector("#preview .doc");
-  const canvas=await html2canvas(node,{scale:2,useCORS:true,backgroundColor:"#ffffff",logging:false});
-  const img=canvas.toDataURL("image/jpeg",0.96);
-  const {jsPDF}=window.jspdf;
-  const pdf=new jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true});
-  pdf.addImage(img,"JPEG",0,0,297,210,undefined,"FAST");
-  let bytes=pdf.output("arraybuffer");
-  if($("appendComplement").checked){
-   if(!window.PDFLib)throw new Error("Biblioteca de união de PDF não carregou. Atualize a página e tente novamente.");
-   const finalDoc=await PDFLib.PDFDocument.load(bytes);
-   const comp=await PDFLib.PDFDocument.load(await getComplementBytes());
-   const pages=await finalDoc.copyPages(comp,comp.getPageIndices());
-   pages.forEach(pg=>finalDoc.addPage(pg));
-   bytes=await finalDoc.save();
-  }
-  const d=data(),safe=(d.client||"Cliente").replace(/[^a-zA-Z0-9À-ÿ_-]+/g,"_");
-  const blob=new Blob([bytes],{type:"application/pdf"}),a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);a.download=`Orcamento_L_Engenharia_${safe}_OS_${d.os||""}.pdf`;a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
- }catch(err){console.error(err);alert("Não foi possível gerar o PDF: "+err.message)}
- finally{btn.disabled=false;btn.textContent=label}
+   const budgetBytes=await buildBudgetPdf();
+   const d=data(),safe=(d.client||"Cliente").replace(/[^\wÀ-ÿ-]+/g,"_");
+   const blob=new Blob([budgetBytes],{type:"application/pdf"}),a=document.createElement("a");
+   a.href=URL.createObjectURL(blob);
+   a.download=`Orcamento_L_Engenharia_${safe}_OS_${d.os||""}.pdf`;
+   a.click();
+   setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+ }catch(err){
+   console.error(err);
+   alert("Não foi possível gerar o PDF: "+err.message);
+ }finally{
+   btn.disabled=false;
+   btn.textContent=old;
+ }
 }
 $("printBudget").onclick=generateFinalPdf;
 
@@ -379,8 +358,7 @@ function loadBudget(d,duplicate){
  $("client").value=d.client||"";$("phone").value=d.phone||"";$("work").value=d.work||"";$("address").value=d.address||"";$("projectTitle").value=d.projectTitle||"";
  $("companyName").value=d.companyName||"L ENGENHARIA";$("slogan").value=d.slogan||"";$("companyAddress").value=d.companyAddress||"";$("companyPhones").value=d.companyPhones||"";$("instagram").value=d.instagram||"";$("email").value=d.email||"";
  $("showItemValues").checked=!!d.showItemValues;$("autoTotal").checked=!!d.autoTotal;
- $("keepBlankRows").checked=d.keepBlankRows!==false;$("minRows").value=d.minRows||8;$("appendComplement").checked=d.appendComplement!==false;
- $("total").value=d.total||"";$("payment").value=d.payment||"";$("paymentFooter").value=d.paymentFooter||"";
+ $("keepBlankRows").checked=d.keepBlankRows!==false;$("minRows").value=d.minRows||8; $("total").value=d.total||"";$("payment").value=d.payment||"";$("paymentFooter").value=d.paymentFooter||"";
  renderItems();renderNotes();document.querySelector('[data-tab="dados"]').click();$("topCode").textContent="O.S. "+$("os").value
 }
 
