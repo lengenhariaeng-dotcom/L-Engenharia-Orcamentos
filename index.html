@@ -47,7 +47,7 @@ textarea{resize:vertical;min-height:78px}
   width:1122px;min-height:794px;margin:auto;background:#fff;color:#111;
   font-family:Arial,Helvetica,sans-serif;padding:38px 38px 28px;box-shadow:0 10px 35px rgba(0,0,0,.12)
 }
-.doc-table{width:100%;border-collapse:collapse;table-layout:fixed}.doc-table td,.doc-table th{border:2px solid #222;padding:3px 6px;font-size:15px;vertical-align:middle}.doc-table .no-pad{padding:0}.doc-logo{width:142px;height:114px;object-fit:contain;display:block;margin:auto}.doc-title{text-align:center;font-weight:800;font-size:22px;color:#173E74}.doc-os{font-weight:800;font-size:15px}.doc-label{width:92px;font-weight:700}.doc-center{text-align:center}.doc-section{background:#C9D7F0;font-weight:800;text-align:center}.doc-project{text-align:center;font-weight:700;font-size:16px}.doc-head th{font-size:16px}.doc-value{text-align:center;font-size:18px;font-weight:800;background:#EEE}.doc-pay{text-align:center;font-size:15px;line-height:1.45}.doc-note{text-align:center;font-size:14px;line-height:1.3}.doc-footer{padding:10px 0 0;text-align:center}.doc-footer .contact{font-size:14px;line-height:1.55;width:100%;margin:0 auto}.doc-footer .contact strong{font-size:17px;color:#111;font-weight:400}
+.doc-table{width:100%;border-collapse:collapse;table-layout:fixed}.doc-table td,.doc-table th{border:2px solid #222;padding:3px 6px;font-size:15px;vertical-align:middle}.doc-table .no-pad{padding:0}.doc-logo{width:142px;height:114px;object-fit:contain;display:block;margin:auto}.doc-title{text-align:center;font-weight:800;font-size:22px;color:#173E74}.doc-os{font-weight:800;font-size:15px}.doc-label{width:92px;font-weight:700}.doc-center{text-align:center}.doc-section{background:#C9D7F0;font-weight:800;text-align:center}.doc-project{text-align:center;font-weight:700;font-size:16px}.doc-head th{font-size:16px}.doc-value{text-align:center;font-size:18px;font-weight:800;background:#EEE}.doc-pay{text-align:center;font-size:15px;line-height:1.45}.doc-note{text-align:center;font-size:14px;line-height:1.3}.doc-footer{display:grid;grid-template-columns:minmax(0,1fr) 225px;align-items:center;min-height:118px;border:2px solid #222;border-top:0;box-sizing:border-box;padding:0}.doc-footer .contact{font-size:15px;line-height:1.5;text-align:center;padding-left:70px}.doc-footer .footer-logo-box{height:114px;display:flex;align-items:center;justify-content:center;padding-right:18px}.doc-footer .footer-logo{width:170px;height:108px;object-fit:contain;display:block}
 .amount-mode{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 dialog{border:0;border-radius:16px;padding:0;max-width:min(780px,94vw);box-shadow:0 30px 80px rgba(0,0,0,.26)}dialog::backdrop{background:rgba(8,18,30,.5);backdrop-filter:blur(3px)}.modal{padding:18px;background:#fff}.modal h3{margin-top:0;color:var(--blue)}
 @media(max-width:800px){
@@ -176,7 +176,8 @@ const defaultNotes=[
 
 let state={
  id:null,
- logo:"logo-l-engenharia.png",
+ logo:"logo-topo.png",
+ footerLogo:"logo-rodape.png",
  items:[
   {id:uid(),number:"1.0",description:"Execução de serviços de elétrica",qty:"",unit:"",price:""},
   {id:uid(),number:"1.1",description:"Execução de hidráulica",qty:"",unit:"",price:""},
@@ -230,13 +231,13 @@ $("addNote").onclick=()=>{state.notes.push({id:uid(),text:""});renderNotes()};
 
 $("logoInput").onchange=e=>{
  const f=e.target.files?.[0];if(!f)return;
- const r=new FileReader();r.onload=()=>{state.logo=r.result;renderPreview()};r.readAsDataURL(f)
+ const r=new FileReader();r.onload=()=>{state.logo=r.result;state.footerLogo=r.result;renderPreview()};r.readAsDataURL(f)
 };
 
 function data(){
  return{
   id:state.id||uid(),
-  logo:state.logo,
+  logo:state.logo,footerLogo:state.footerLogo,
   os:$("os").value,date:$("date").value,
   client:$("client").value,phone:$("phone").value,work:$("work").value,address:$("address").value,projectTitle:$("projectTitle").value,
   companyName:$("companyName").value,slogan:$("slogan").value,companyAddress:$("companyAddress").value,companyPhones:$("companyPhones").value,
@@ -294,6 +295,7 @@ function docHtml(d){
     ${esc(d.instagram)}<br>
     ${esc(d.email)}
    </div>
+   <div class="footer-logo-box"><img class="footer-logo" src="${d.footerLogo||'logo-rodape.png'}"></div>
   </div>
  </div>`
 }
@@ -308,23 +310,51 @@ function fitPreview(){
 }
 window.addEventListener("resize",fitPreview);
 
-
+async function waitForDocumentImages(node){
+ const imgs=[...node.querySelectorAll("img")];
+ await Promise.all(imgs.map(img=>{
+  if(img.complete&&img.naturalWidth>0)return Promise.resolve();
+  return new Promise(resolve=>{
+   img.addEventListener("load",resolve,{once:true});
+   img.addEventListener("error",resolve,{once:true});
+  });
+ }));
+}
 async function generateFinalPdf(){
- const btn=$("printBudget"),old=btn.textContent;btn.disabled=true;btn.textContent="Gerando PDF...";
+ const btn=$("printBudget"),label=btn.textContent;
+ btn.disabled=true;
+ btn.textContent="Gerando PDF...";
  try{
-   const budgetBytes=await buildBudgetPdf();
-   const d=data(),safe=(d.client||"Cliente").replace(/[^\wÀ-ÿ-]+/g,"_");
-   const blob=new Blob([budgetBytes],{type:"application/pdf"}),a=document.createElement("a");
-   a.href=URL.createObjectURL(blob);
-   a.download=`Orcamento_L_Engenharia_${safe}_OS_${d.os||""}.pdf`;
-   a.click();
-   setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+  renderPreview();
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  if(!window.html2canvas||!window.jspdf){
+   throw new Error("As bibliotecas de PDF não carregaram. Atualize a página e tente novamente.");
+  }
+  const node=document.querySelector("#preview .doc");
+  if(!node)throw new Error("A pré-visualização do orçamento não foi encontrada.");
+  await waitForDocumentImages(node);
+  const canvas=await html2canvas(node,{
+   scale:2,
+   useCORS:true,
+   allowTaint:true,
+   backgroundColor:"#ffffff",
+   logging:false,
+   windowWidth:1122,
+   windowHeight:794
+  });
+  const img=canvas.toDataURL("image/jpeg",0.96);
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true});
+  pdf.addImage(img,"JPEG",0,0,297,210,undefined,"FAST");
+  const d=data();
+  const safe=(d.client||"Cliente").replace(/[^a-zA-Z0-9À-ÿ_-]+/g,"_");
+  pdf.save(`Orcamento_L_Engenharia_${safe}_OS_${d.os||""}.pdf`);
  }catch(err){
-   console.error(err);
-   alert("Não foi possível gerar o PDF: "+err.message);
+  console.error(err);
+  alert("Não foi possível gerar o PDF: "+err.message);
  }finally{
-   btn.disabled=false;
-   btn.textContent=old;
+  btn.disabled=false;
+  btn.textContent=label;
  }
 }
 $("printBudget").onclick=generateFinalPdf;
@@ -350,7 +380,8 @@ function renderHistory(){
 }
 function loadBudget(d,duplicate){
  state.id=duplicate?null:d.id;
- state.logo=d.logo||"logo-l-engenharia.png";
+ state.logo=(!d.logo||d.logo==="logo-l-engenharia.png")?"logo-topo.png":d.logo;
+ state.footerLogo=(!d.footerLogo||d.footerLogo==="logo-l-engenharia.png")?"logo-rodape.png":d.footerLogo;
  state.items=(d.items||[]).map(x=>({...x,id:uid()}));
  state.notes=(d.notes||[]).map(x=>({...x,id:uid()}));
  $("os").value=duplicate?String(new Date().getFullYear())+String(Math.floor(100+Math.random()*900)):d.os||"";
@@ -358,7 +389,8 @@ function loadBudget(d,duplicate){
  $("client").value=d.client||"";$("phone").value=d.phone||"";$("work").value=d.work||"";$("address").value=d.address||"";$("projectTitle").value=d.projectTitle||"";
  $("companyName").value=d.companyName||"L ENGENHARIA";$("slogan").value=d.slogan||"";$("companyAddress").value=d.companyAddress||"";$("companyPhones").value=d.companyPhones||"";$("instagram").value=d.instagram||"";$("email").value=d.email||"";
  $("showItemValues").checked=!!d.showItemValues;$("autoTotal").checked=!!d.autoTotal;
- $("keepBlankRows").checked=d.keepBlankRows!==false;$("minRows").value=d.minRows||8; $("total").value=d.total||"";$("payment").value=d.payment||"";$("paymentFooter").value=d.paymentFooter||"";
+ $("keepBlankRows").checked=d.keepBlankRows!==false;$("minRows").value=d.minRows||8;
+ $("total").value=d.total||"";$("payment").value=d.payment||"";$("paymentFooter").value=d.paymentFooter||"";
  renderItems();renderNotes();document.querySelector('[data-tab="dados"]').click();$("topCode").textContent="O.S. "+$("os").value
 }
 
