@@ -1,20 +1,12 @@
-L ENGENHARIA - APLICATIVO DE ORÇAMENTOS v2
+L ENGENHARIA - ORÇAMENTOS v3
 
-Atualizações:
-- Modelo ajustado com base na planilha de orçamento da L Engenharia.
-- Opção "Manter linhas vazias no orçamento".
-- Campo "Mínimo de linhas" (padrão: 8).
-  Ex.: 3 serviços + mínimo 8 = 5 linhas em branco no documento.
-- PDF do orçamento gerado diretamente pelo aplicativo.
-- Opção para anexar automaticamente o complemento institucional após o orçamento.
-- Complemento padrão já incluído: complemento-orcamento.pdf (5 páginas).
-- É possível substituir o complemento por qualquer outro PDF antes de gerar.
-- O arquivo final é baixado como um único PDF: orçamento + complemento.
-- Continua sendo possível editar, salvar, atualizar, duplicar e fazer backup dos orçamentos.
+Ajustes desta versão:
+- Rodapé centralizado exatamente no eixo do orçamento, como no Excel.
+- Removido o logo do rodapé.
+- Logo superior esquerdo agora ocupa toda a altura do cabeçalho, sem linha/célula vazia embaixo.
+- Opção para manter linhas vazias quando houver poucos serviços.
+- Quantidade mínima de linhas configurável.
+- Geração de um único PDF: orçamento + complemento institucional.
+- Opção de substituir o complemento por outro PDF.
 
-IMPORTANTE
-A geração/união do PDF usa bibliotecas JavaScript carregadas pela internet.
-O aplicativo deve estar online no GitHub Pages durante a primeira utilização dessa função.
-
-PUBLICAÇÃO
-Envie todos os arquivos desta pasta para a raiz do repositório GitHub e faça Commit changes.
+Para atualizar no GitHub Pages, envie TODOS os arquivos desta pasta para a raiz do repositório e confirme o Commit changes.
