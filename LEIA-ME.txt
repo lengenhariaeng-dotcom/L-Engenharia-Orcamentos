@@ -1,24 +1,20 @@
-L ENGENHARIA - APLICATIVO DE ORÇAMENTOS
+L ENGENHARIA - APLICATIVO DE ORÇAMENTOS v2
 
-Baseado no padrão de orçamento fornecido pela L Engenharia.
+Atualizações:
+- Modelo ajustado com base na planilha de orçamento da L Engenharia.
+- Opção "Manter linhas vazias no orçamento".
+- Campo "Mínimo de linhas" (padrão: 8).
+  Ex.: 3 serviços + mínimo 8 = 5 linhas em branco no documento.
+- PDF do orçamento gerado diretamente pelo aplicativo.
+- Opção para anexar automaticamente o complemento institucional após o orçamento.
+- Complemento padrão já incluído: complemento-orcamento.pdf (5 páginas).
+- É possível substituir o complemento por qualquer outro PDF antes de gerar.
+- O arquivo final é baixado como um único PDF: orçamento + complemento.
+- Continua sendo possível editar, salvar, atualizar, duplicar e fazer backup dos orçamentos.
 
-Recursos:
-- O.S., data, cliente, telefone, obra, endereço e título editáveis
-- Dados da própria L Engenharia editáveis
-- Logo substituível
-- Serviços adicionáveis/removíveis
-- Opção de exibir ou ocultar quantidade, unidade e valores por item
-- Total manual ou automático
-- Forma de pagamento editável
-- Observações adicionáveis/removíveis
-- Pré-visualização no padrão do documento
-- PDF em A4 paisagem, fundo branco
-- Salvar e atualizar orçamento
-- Duplicar orçamento
-- Histórico local
-- Backup e restauração em JSON
+IMPORTANTE
+A geração/união do PDF usa bibliotecas JavaScript carregadas pela internet.
+O aplicativo deve estar online no GitHub Pages durante a primeira utilização dessa função.
 
-Para publicar no GitHub Pages:
-1. Crie um novo repositório ou use um existente.
-2. Envie estes arquivos para a raiz.
-3. Settings > Pages > Deploy from a branch > main > /(root).
+PUBLICAÇÃO
+Envie todos os arquivos desta pasta para a raiz do repositório GitHub e faça Commit changes.
