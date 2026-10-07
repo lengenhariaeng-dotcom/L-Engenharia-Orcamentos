@@ -1,4 +1,4 @@
-const CACHE='l-eng-orcamentos-v7';
+const CACHE='l-eng-orcamentos-v8';
 const ASSETS=['./','index.html','manifest.json','logo-l-engenharia.png','logo-topo.png','logo-rodape.png','icon-192.svg','icon-512.svg'];
 
 self.addEventListener('install',event=>{

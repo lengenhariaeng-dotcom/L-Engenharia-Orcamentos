@@ -6,7 +6,6 @@
 <meta name="theme-color" content="#173E74">
 <title>L Engenharia | Orçamentos</title>
 <link rel="manifest" href="manifest.json">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{
@@ -114,7 +113,7 @@ dialog{border:0;border-radius:16px;padding:0;max-width:min(780px,94vw);box-shado
         <label class="toggle"><input id="showItemValues" type="checkbox"> Exibir valores por item no documento</label>
         <label class="toggle"><input id="autoTotal" type="checkbox"> Calcular total automaticamente</label>
         <label class="toggle"><input id="keepBlankRows" type="checkbox" checked> Manter linhas vazias no orçamento</label>
-        <label style="max-width:190px">Mínimo de linhas<input id="minRows" type="number" min="1" max="20" step="1" value="8"></label>
+        <label style="max-width:190px">Mínimo de linhas<input id="minRows" type="number" min="1" max="20" step="1" value="11"></label>
       </div>
       <div class="small" style="margin-top:8px">Ex.: com 4 serviços e mínimo de 8 linhas, o orçamento mantém 4 linhas em branco.</div>
       <div id="items" class="items" style="margin-top:12px"></div>
@@ -243,7 +242,7 @@ function data(){
   companyName:$("companyName").value,slogan:$("slogan").value,companyAddress:$("companyAddress").value,companyPhones:$("companyPhones").value,
   instagram:$("instagram").value,email:$("email").value,
   items:state.items,showItemValues:$("showItemValues").checked,autoTotal:$("autoTotal").checked,
-  keepBlankRows:$("keepBlankRows").checked,minRows:parseInt($("minRows").value||"8",10),total:$("total").value,
+  keepBlankRows:$("keepBlankRows").checked,minRows:parseInt($("minRows").value||"11",10),total:$("total").value,
   payment:$("payment").value,paymentFooter:$("paymentFooter").value,notes:state.notes,
   updatedAt:new Date().toISOString()
  }
@@ -258,7 +257,7 @@ function docHtml(d){
    }
    return `<tr><td>${esc(it.number)}</td><td class="doc-center" colspan="5">${esc(it.description)}</td></tr>`
  });
- const blankCount=d.keepBlankRows?Math.max(0,(parseInt(d.minRows||8,10))-d.items.length):0;
+ const blankCount=d.keepBlankRows?Math.max(0,(parseInt(d.minRows||11,10))-d.items.length):0;
  const blankRows=Array.from({length:blankCount},()=>show
    ? `<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>`
    : `<tr><td>&nbsp;</td><td colspan="5">&nbsp;</td></tr>`);
@@ -310,51 +309,244 @@ function fitPreview(){
 }
 window.addEventListener("resize",fitPreview);
 
-async function waitForDocumentImages(node){
- const imgs=[...node.querySelectorAll("img")];
- await Promise.all(imgs.map(img=>{
-  if(img.complete&&img.naturalWidth>0)return Promise.resolve();
-  return new Promise(resolve=>{
-   img.addEventListener("load",resolve,{once:true});
-   img.addEventListener("error",resolve,{once:true});
-  });
- }));
+
+async function pdfImageData(source){
+ if(!source)return null;
+ if(String(source).startsWith("data:"))return source;
+ const r=await fetch(source,{cache:"no-store"});
+ if(!r.ok)throw new Error("Não foi possível carregar o logo.");
+ const b=await r.blob();
+ return await new Promise((resolve,reject)=>{
+  const fr=new FileReader();
+  fr.onload=()=>resolve(fr.result);
+  fr.onerror=reject;
+  fr.readAsDataURL(b);
+ });
+}
+function pdfImageFormat(data){
+ const s=String(data||"").toLowerCase();
+ if(s.startsWith("data:image/jpeg")||s.startsWith("data:image/jpg"))return "JPEG";
+ return "PNG";
+}
+function addImageFit(doc,data,x,y,w,h){
+ if(!data)return;
+ try{
+  const prop=doc.getImageProperties(data),ratio=prop.width/prop.height;
+  let iw=w,ih=iw/ratio;
+  if(ih>h){ih=h;iw=ih*ratio}
+  const ix=x+(w-iw)/2,iy=y+(h-ih)/2;
+  doc.addImage(data,pdfImageFormat(data),ix,iy,iw,ih,undefined,"FAST");
+ }catch(e){console.warn("Logo não inserido",e)}
+}
+function pdfDate(v){
+ if(!v)return"";
+ const [a,m,d]=String(v).split("-");
+ return d&&m&&a?`${d}.${m}.${a}`:v;
+}
+function fitOneLine(doc,txt,maxWidth,startSize=8.5,minSize=6.2,bold=false){
+ txt=String(txt||"");
+ let s=startSize;
+ doc.setFont("helvetica",bold?"bold":"normal");
+ while(s>minSize){
+  doc.setFontSize(s);
+  if(doc.getTextWidth(txt)<=maxWidth)return s;
+  s-=0.25;
+ }
+ return minSize;
 }
 async function generateFinalPdf(){
  const btn=$("printBudget"),label=btn.textContent;
- btn.disabled=true;
- btn.textContent="Gerando PDF...";
+ btn.disabled=true;btn.textContent="Gerando PDF...";
  try{
-  renderPreview();
-  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-  if(!window.html2canvas||!window.jspdf){
-   throw new Error("As bibliotecas de PDF não carregaram. Atualize a página e tente novamente.");
-  }
-  const node=document.querySelector("#preview .doc");
-  if(!node)throw new Error("A pré-visualização do orçamento não foi encontrada.");
-  await waitForDocumentImages(node);
-  const canvas=await html2canvas(node,{
-   scale:2,
-   useCORS:true,
-   allowTaint:true,
-   backgroundColor:"#ffffff",
-   logging:false,
-   windowWidth:1122,
-   windowHeight:794
-  });
-  const img=canvas.toDataURL("image/jpeg",0.96);
+  if(!window.jspdf)throw new Error("A biblioteca de PDF não carregou. Atualize a página e tente novamente.");
   const {jsPDF}=window.jspdf;
-  const pdf=new jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true});
-  pdf.addImage(img,"JPEG",0,0,297,210,undefined,"FAST");
   const d=data();
+  const doc=new jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true});
+  const pageW=297,pageH=210,x=8,w=281;
+  const dark=[23,62,116],light=[201,215,240],gray=[221,221,221];
+
+  doc.setLineWidth(.30);
+  doc.setDrawColor(0,0,0);
+  doc.setTextColor(0,0,0);
+
+  const rect=(rx,ry,rw,rh,fill=null)=>{
+   if(fill){doc.setFillColor(...fill);doc.rect(rx,ry,rw,rh,"FD")}
+   else doc.rect(rx,ry,rw,rh);
+  };
+  const line=(x1,y1,x2,y2)=>doc.line(x1,y1,x2,y2);
+  const center=(txt,cx,yy,size=9,bold=false,color=null)=>{
+   doc.setFont("helvetica",bold?"bold":"normal");
+   doc.setFontSize(size);
+   if(color)doc.setTextColor(...color);else doc.setTextColor(0,0,0);
+   doc.text(String(txt||""),cx,yy,{align:"center"});
+  };
+  const left=(txt,lx,yy,size=9,bold=false)=>{
+   doc.setFont("helvetica",bold?"bold":"normal");doc.setFontSize(size);doc.setTextColor(0,0,0);
+   doc.text(String(txt||""),lx,yy);
+  };
+
+  let y=5;
+
+  // Cabeçalho exatamente no padrão do Excel:
+  // logo à esquerda, nome central, O.S./data à direita e dados do cliente abaixo.
+  const headerH=32,logoW=44,osW=70,titleH=8,clientH=6,labelW=28;
+  rect(x,y,w,headerH);
+  line(x+logoW,y,x+logoW,y+headerH);
+  line(x+w-osW,y,x+w-osW,y+titleH);
+  line(x+w-osW,y+titleH/2,x+w,y+titleH/2);
+  line(x+logoW,y+titleH,x+w,y+titleH);
+  for(let i=1;i<=4;i++)line(x+logoW,y+titleH+i*clientH,x+w,y+titleH+i*clientH);
+  for(let i=0;i<4;i++)line(x+logoW+labelW,y+titleH+i*clientH,x+logoW+labelW,y+titleH+(i+1)*clientH);
+
+  const topLogo=await pdfImageData(d.logo||"logo-topo.png");
+  addImageFit(doc,topLogo,x+4,y+2,logoW-8,headerH-4);
+
+  center(d.companyName||"L ENGENHARIA",x+logoW+(w-logoW-osW)/2,y+5.6,17,true,dark);
+  center("O.S:  "+(d.os||""),x+w-osW/2,y+3.2,10,true);
+  center("Data: "+pdfDate(d.date),x+w-osW/2,y+7.1,10,true);
+
+  const info=[
+   ["Cliente:",d.client],
+   ["Tel:",d.phone],
+   ["Obra:",d.work],
+   ["Endereço:",d.address]
+  ];
+  info.forEach((row,i)=>{
+   const yy=y+titleH+i*clientH;
+   left(row[0],x+logoW+1.5,yy+4.15,9,false);
+   const val=String(row[1]||"");
+   const maxW=w-logoW-labelW-4;
+   const fs=fitOneLine(doc,val,maxW,9,7.1,false);
+   center(val,x+logoW+labelW+(w-logoW-labelW)/2,yy+4.15,fs,false);
+  });
+
+  y+=headerH;
+
+  // Linha em branco, faixa azul e título da obra.
+  rect(x,y,w,4);y+=4;
+  rect(x,y,w,4,light);y+=4;
+  rect(x,y,w,6);
+  center(d.projectTitle,x+w/2,y+4.2,10,false);
+  y+=6;
+  rect(x,y,w,4);y+=4;
+
+  // Tabela de serviços.
+  const show=!!d.showItemValues;
+  const itemW=16;
+  rect(x,y,w,5.5);
+  if(show){
+   const cols=[16,145,25,20,37.5,37.5];
+   let px=x;
+   for(let i=1;i<cols.length;i++){px+=cols[i-1];line(px,y,px,y+5.5)}
+   const heads=["Item","Descrição","Qtd.","Un.","Valor unit.","Total"];
+   let hx=x;
+   heads.forEach((h,i)=>{center(h,hx+cols[i]/2,y+4.0,8.7,true);hx+=cols[i]});
+  }else{
+   line(x+itemW,y,x+itemW,y+5.5);
+   center("Item",x+itemW/2,y+4.0,10,true);
+   center("Descrição",x+itemW+(w-itemW)/2,y+4.0,10,true);
+  }
+  y+=5.5;
+
+  const minRows=d.keepBlankRows?Math.max(1,parseInt(d.minRows||11,10)):d.items.length;
+  const rowCount=Math.max(d.items.length,minRows);
+  const rows=[...d.items];
+  while(rows.length<rowCount)rows.push({number:"",description:"",qty:"",unit:"",price:""});
+  const rowH=Math.max(3.2,Math.min(4.7,51.7/Math.max(1,rowCount)));
+
+  rows.forEach(it=>{
+   rect(x,y,w,rowH);
+   if(show){
+    const cols=[16,145,25,20,37.5,37.5];
+    let px=x;for(let i=1;i<cols.length;i++){px+=cols[i-1];line(px,y,px,y+rowH)}
+    const total=(+it.qty||0)*(+it.price||0);
+    const vals=[it.number,it.description,it.qty,it.unit,it.price?money(it.price):"",total?money(total):""];
+    let vx=x;
+    vals.forEach((v,i)=>{
+     const maxW=cols[i]-3;
+     const fs=fitOneLine(doc,v,maxW,i===1?8.3:8.0,6.0,false);
+     center(v,vx+cols[i]/2,y+rowH*.73,fs,false);
+     vx+=cols[i];
+    });
+   }else{
+    line(x+itemW,y,x+itemW,y+rowH);
+    center(it.number,x+itemW/2,y+rowH*.73,8.4,false);
+    const desc=String(it.description||"");
+    const fs=fitOneLine(doc,desc,w-itemW-5,8.5,6.3,false);
+    center(desc,x+itemW+(w-itemW)/2,y+rowH*.73,fs,false);
+   }
+   y+=rowH;
+  });
+
+  // Valor.
+  rect(x,y,w,6,gray);
+  center("VALOR : "+money(d.total),x+w/2,y+4.4,10,false);
+  y+=6;
+
+  // Linha branca e pagamento.
+  rect(x,y,w,4);y+=4;
+  rect(x,y,w,5.5,light);
+  center("FORMA DE PAGAMENTO",x+w/2,y+4.0,10,false);
+  y+=5.5;
+
+  const payLines=doc.splitTextToSize(String(d.payment||""),w-14).slice(0,2);
+  const payH=9;
+  rect(x,y,w,payH);
+  doc.setFont("helvetica","normal");doc.setFontSize(8.2);doc.setTextColor(0,0,0);
+  if(payLines.length===1)doc.text(payLines[0],x+w/2,y+5.4,{align:"center"});
+  else{
+   doc.text(payLines[0],x+w/2,y+3.6,{align:"center"});
+   doc.text(payLines[1],x+w/2,y+7.0,{align:"center"});
+  }
+  y+=payH;
+
+  rect(x,y,w,5);
+  center(d.paymentFooter,x+w/2,y+3.7,9,false);
+  y+=5;
+
+  // Observações.
+  rect(x,y,w,5.5,light);
+  center("PRAZO E OBSERVAÇÕES",x+w/2,y+4.0,10,false);
+  y+=5.5;
+
+  const notes=d.notes.filter(n=>String(n.text||"").trim()).map(n=>"*"+String(n.text||"").trim());
+  notes.forEach(note=>{
+   doc.setFont("helvetica","normal");doc.setFontSize(7.5);
+   const lines=doc.splitTextToSize(note,w-12).slice(0,2);
+   const nh=Math.max(5,lines.length*3.1+1.3);
+   rect(x,y,w,nh);
+   if(lines.length===1)doc.text(lines[0],x+w/2,y+3.6,{align:"center"});
+   else{
+    doc.text(lines[0],x+w/2,y+2.8,{align:"center"});
+    doc.text(lines[1],x+w/2,y+5.7,{align:"center"});
+   }
+   y+=nh;
+  });
+
+  // Rodapé: dados centralizados e logo à direita, como no Excel.
+  const footerH=25,footerLogoW=55;
+  if(y+footerH>205){
+   // Mantém uma única página reduzindo apenas o espaço antes do rodapé.
+   y=Math.min(y,205-footerH);
+  }
+  rect(x,y,w,footerH);
+  line(x+w-footerLogoW,y,x+w-footerLogoW,y+footerH);
+  const cc=x+(w-footerLogoW)/2;
+  center(d.companyAddress,cc,y+6.0,8.5,false);
+  center(d.companyPhones,cc,y+11.0,8.5,false);
+  center(d.instagram,cc,y+16.0,9,false);
+  center(d.email,cc,y+21.0,8.5,false);
+
+  const footerLogo=await pdfImageData(d.footerLogo||"logo-rodape.png");
+  addImageFit(doc,footerLogo,x+w-footerLogoW+3,y+2,footerLogoW-6,footerH-4);
+
   const safe=(d.client||"Cliente").replace(/[^a-zA-Z0-9À-ÿ_-]+/g,"_");
-  pdf.save(`Orcamento_L_Engenharia_${safe}_OS_${d.os||""}.pdf`);
+  doc.save(`Orcamento_L_Engenharia_${safe}_OS_${d.os||""}.pdf`);
  }catch(err){
   console.error(err);
   alert("Não foi possível gerar o PDF: "+err.message);
  }finally{
-  btn.disabled=false;
-  btn.textContent=label;
+  btn.disabled=false;btn.textContent=label;
  }
 }
 $("printBudget").onclick=generateFinalPdf;
@@ -389,7 +581,7 @@ function loadBudget(d,duplicate){
  $("client").value=d.client||"";$("phone").value=d.phone||"";$("work").value=d.work||"";$("address").value=d.address||"";$("projectTitle").value=d.projectTitle||"";
  $("companyName").value=d.companyName||"L ENGENHARIA";$("slogan").value=d.slogan||"";$("companyAddress").value=d.companyAddress||"";$("companyPhones").value=d.companyPhones||"";$("instagram").value=d.instagram||"";$("email").value=d.email||"";
  $("showItemValues").checked=!!d.showItemValues;$("autoTotal").checked=!!d.autoTotal;
- $("keepBlankRows").checked=d.keepBlankRows!==false;$("minRows").value=d.minRows||8;
+ $("keepBlankRows").checked=d.keepBlankRows!==false;$("minRows").value=d.minRows||11;
  $("total").value=d.total||"";$("payment").value=d.payment||"";$("paymentFooter").value=d.paymentFooter||"";
  renderItems();renderNotes();document.querySelector('[data-tab="dados"]').click();$("topCode").textContent="O.S. "+$("os").value
 }
